@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Lucky 21, jeu local de mémorisation et d'addition pour deux joueurs.">
+  <title>Lucky 21</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="game-header">
+      <div>
+        <p class="eyebrow">Jeu local à deux joueurs</p>
+        <h1>Lucky <span>21</span></h1>
+      </div>
+      <button id="new-match-button" class="button button-ghost" type="button">Nouvelle partie</button>
+    </header>
+
+    <section class="scoreboard" aria-label="Tableau des scores">
+      <article id="player-card-0" class="player-card player-card-active">
+        <div>
+          <p class="player-label">Joueur 1</p>
+          <h2 id="player-name-0">Joueur 1</h2>
+        </div>
+        <div class="score-pills">
+          <span>Round <strong id="round-score-0">0</strong>/4</span>
+          <span>Manches <strong id="match-score-0">0</strong>/2</span>
+          <span>×5 <strong id="boost-0">disponible</strong></span>
+        </div>
+      </article>
+
+      <div class="round-indicator">
+        <span>Round</span>
+        <strong id="round-number">1</strong>
+      </div>
+
+      <article id="player-card-1" class="player-card">
+        <div>
+          <p class="player-label">Joueur 2</p>
+          <h2 id="player-name-1">Joueur 2</h2>
+        </div>
+        <div class="score-pills">
+          <span>Round <strong id="round-score-1">0</strong>/4</span>
+          <span>Manches <strong id="match-score-1">0</strong>/2</span>
+          <span>×5 <strong id="boost-1">disponible</strong></span>
+        </div>
+      </article>
+    </section>
+
+    <section class="status-panel" aria-live="polite">
+      <div>
+        <p id="phase-label" class="eyebrow">Préparation</p>
+        <h2 id="status-title">Lancez une partie</h2>
+        <p id="status-message">Les tuiles seront visibles avant d’être retournées.</p>
+      </div>
+      <div id="memory-timer" class="timer" hidden>
+        <span>Mémorisation</span>
+        <strong id="timer-value">10</strong>
+      </div>
+    </section>
+
+    <section class="game-layout">
+      <div class="board-wrap">
+        <div id="board" class="board" role="grid" aria-label="Plateau Lucky 21"></div>
+      </div>
+
+      <aside class="control-panel">
+        <section class="panel-section">
+          <h3>Déplacement</h3>
+          <div class="movement-summary">
+            <span>Pas effectués</span>
+            <strong><span id="steps-used">0</span>/<span id="step-limit">3</span></strong>
+          </div>
+          <label class="boost-toggle">
+            <input id="boost-toggle" type="checkbox">
+            <span>Utiliser mon déplacement de 5</span>
+          </label>
+          <div class="direction-pad" aria-label="Déplacement du pion">
+            <button class="direction direction-up" type="button" data-direction="up" aria-label="Monter">↑</button>
+            <button class="direction direction-left" type="button" data-direction="left" aria-label="Aller à gauche">←</button>
+            <button class="direction direction-down" type="button" data-direction="down" aria-label="Descendre">↓</button>
+            <button class="direction direction-right" type="button" data-direction="right" aria-label="Aller à droite">→</button>
+          </div>
+          <button id="end-move-button" class="button button-primary button-full" type="button">Terminer le déplacement</button>
+        </section>
+
+        <section class="panel-section">
+          <div class="section-heading">
+            <h3 id="hand-title">Stockage du joueur</h3>
+            <span id="hand-count">0/4</span>
+          </div>
+          <div id="hand" class="hand" aria-label="Tuiles stockées"></div>
+          <p id="selection-help" class="hint">Sélectionnez trois tuiles totalisant 21.</p>
+          <div class="sum-line">
+            <span>Somme sélectionnée</span>
+            <strong id="selected-sum">0</strong>
+          </div>
+          <button id="score-button" class="button button-gold button-full" type="button">Valider ce 21</button>
+          <button id="deposit-button" class="button button-secondary button-full" type="button">Déposer la tuile sélectionnée</button>
+        </section>
+
+        <section class="panel-section actions-section">
+          <button id="take-button" class="button button-primary button-full" type="button">Prendre la tuile</button>
+          <button id="pass-button" class="button button-ghost button-full" type="button">Passer le tour</button>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <dialog id="setup-dialog" class="dialog">
+    <form id="setup-form" method="dialog">
+      <p class="eyebrow">Nouvelle partie</p>
+      <h2>Préparer Lucky 21</h2>
+      <label>
+        Nom du joueur 1
+        <input id="setup-name-0" name="player1" value="Joueur 1" maxlength="18" required>
+      </label>
+      <label>
+        Nom du joueur 2
+        <input id="setup-name-1" name="player2" value="Joueur 2" maxlength="18" required>
+      </label>
+      <label>
+        Temps de mémorisation
+        <span class="input-with-suffix">
+          <input id="memory-seconds" name="memorySeconds" type="number" min="5" max="60" value="10" required>
+          <span>secondes</span>
+        </span>
+      </label>
+      <button class="button button-gold button-full" type="submit">Commencer le match</button>
+    </form>
+  </dialog>
+
+  <dialog id="message-dialog" class="dialog dialog-message">
+    <div>
+      <p id="dialog-kicker" class="eyebrow">Lucky 21</p>
+      <h2 id="dialog-title">Round terminé</h2>
+      <p id="dialog-message">Le prochain plateau est prêt.</p>
+      <button id="dialog-button" class="button button-gold button-full" type="button">Continuer</button>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
