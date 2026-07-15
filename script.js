@@ -32,27 +32,30 @@ const elements = {
   dialogTitle: document.querySelector("#dialog-title"),
   dialogMessage: document.querySelector("#dialog-message"),
   dialogButton: document.querySelector("#dialog-button"),
-  players: [0, 1].map((index) => ({
-    panel: document.querySelector(`#player-panel-${index}`),
-    name: document.querySelector(`#player-name-${index}`),
-    turnState: document.querySelector(`#turn-state-${index}`),
-    roundScore: document.querySelector(`#round-score-${index}`),
-    matchScore: document.querySelector(`#match-score-${index}`),
-    boost: document.querySelector(`#boost-${index}`),
-    stepsUsed: document.querySelector(`#steps-used-${index}`),
-    stepLimit: document.querySelector(`#step-limit-${index}`),
-    boostToggle: document.querySelector(`#boost-toggle-${index}`),
-    directionButtons: [...document.querySelectorAll(`[data-player="${index}"][data-direction]`)],
-    endMoveButton: document.querySelector(`#end-move-button-${index}`),
-    handCount: document.querySelector(`#hand-count-${index}`),
-    hand: document.querySelector(`#hand-${index}`),
-    selectionHelp: document.querySelector(`#selection-help-${index}`),
-    selectedSum: document.querySelector(`#selected-sum-${index}`),
-    scoreButton: document.querySelector(`#score-button-${index}`),
-    depositButton: document.querySelector(`#deposit-button-${index}`),
-    takeButton: document.querySelector(`#take-button-${index}`),
-    passButton: document.querySelector(`#pass-button-${index}`),
-  })),
+  players: [0, 1].map((index) => {
+    const takeButton = document.querySelector(`#take-button-${index}`);
+    return {
+      panel: document.querySelector(`#player-panel-${index}`),
+      name: document.querySelector(`#player-name-${index}`),
+      turnState: document.querySelector(`#turn-state-${index}`),
+      roundScore: document.querySelector(`#round-score-${index}`),
+      matchScore: document.querySelector(`#match-score-${index}`),
+      boost: document.querySelector(`#boost-${index}`),
+      stepsUsed: document.querySelector(`#steps-used-${index}`),
+      stepLimit: document.querySelector(`#step-limit-${index}`),
+      boostToggle: document.querySelector(`#boost-toggle-${index}`),
+      directionButtons: [...document.querySelectorAll(`[data-player="${index}"][data-direction]`)],
+      handCount: document.querySelector(`#hand-count-${index}`),
+      hand: document.querySelector(`#hand-${index}`),
+      selectionHelp: document.querySelector(`#selection-help-${index}`),
+      selectedSum: document.querySelector(`#selected-sum-${index}`),
+      scoreButton: document.querySelector(`#score-button-${index}`),
+      depositButton: document.querySelector(`#deposit-button-${index}`),
+      takeButton,
+      takeLabel: takeButton.querySelector("span"),
+      passButton: document.querySelector(`#pass-button-${index}`),
+    };
+  }),
 };
 
 const state = {
@@ -75,18 +78,11 @@ const state = {
 };
 
 function createPlayer(name) {
-  return {
-    name,
-    roundScore: 0,
-    matchScore: 0,
-    boostAvailable: true,
-    hand: [],
-  };
+  return { name, roundScore: 0, matchScore: 0, boostAvailable: true, hand: [] };
 }
 
 function createDeck() {
   const values = [];
-
   for (let value = RULES.minimumTileValue; value <= RULES.maximumTileValue; value += 1) {
     for (let copy = 0; copy < RULES.copiesPerValue; copy += 1) values.push(value);
   }
@@ -106,10 +102,7 @@ function createDeck() {
     const tile = deck.find((candidate) => candidate.value === value && !candidate.clover);
     if (tile) tile.clover = true;
   }
-
-  const remaining = shuffle(deck.filter((tile) => !tile.clover));
-  remaining.slice(0, 3).forEach((tile) => { tile.clover = true; });
-
+  shuffle(deck.filter((tile) => !tile.clover)).slice(0, 3).forEach((tile) => { tile.clover = true; });
   return shuffle(deck);
 }
 
@@ -128,12 +121,10 @@ function shuffle(items) {
 
 function startMatch(event) {
   event?.preventDefault();
-
   const names = elements.setupNames.map((input, index) => input.value.trim() || `Joueur ${index + 1}`);
-  const memorySeconds = Number.parseInt(elements.memorySeconds.value, 10);
-
+  const seconds = Number.parseInt(elements.memorySeconds.value, 10);
   state.players = names.map(createPlayer);
-  state.memorySeconds = Number.isFinite(memorySeconds) ? Math.min(60, Math.max(5, memorySeconds)) : 10;
+  state.memorySeconds = Number.isFinite(seconds) ? Math.min(60, Math.max(5, seconds)) : 10;
   state.roundNumber = 1;
   state.currentPlayer = 0;
   elements.setupDialog.close();
@@ -170,7 +161,6 @@ function startRound() {
 function beginMemoryCountdown() {
   let remaining = state.memorySeconds;
   elements.timerValue.textContent = String(remaining);
-
   state.memoryInterval = setInterval(() => {
     remaining -= 1;
     elements.timerValue.textContent = String(Math.max(0, remaining));
@@ -196,12 +186,10 @@ function chooseBoost(playerIndex) {
   const panel = elements.players[playerIndex];
   const player = currentPlayer();
   const wantsBoost = panel.boostToggle.checked;
-
   if (playerIndex !== state.currentPlayer || state.phase !== "move" || state.stepsUsed > 0 || state.firstTurnOfRound || !player.boostAvailable) {
     panel.boostToggle.checked = state.usedBoostThisTurn;
     return;
   }
-
   state.usedBoostThisTurn = wantsBoost;
   state.moveLimit = wantsBoost ? RULES.boostedMove : RULES.normalMove;
   renderControls();
@@ -209,18 +197,10 @@ function chooseBoost(playerIndex) {
 
 function movePawn(direction, playerIndex = state.currentPlayer) {
   if (playerIndex !== state.currentPlayer || state.phase !== "move" || state.stepsUsed >= state.moveLimit) return;
-
-  const deltas = {
-    up: [-1, 0],
-    down: [1, 0],
-    left: [0, -1],
-    right: [0, 1],
-  };
+  const deltas = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] };
   const [rowDelta, colDelta] = deltas[direction] ?? [0, 0];
   const next = { row: state.pawn.row + rowDelta, col: state.pawn.col + colDelta };
-
   if (!isInsideBoard(next.row, next.col)) return;
-
   state.pawn = next;
   state.stepsUsed += 1;
   render();
@@ -230,51 +210,70 @@ function isInsideBoard(row, col) {
   return row >= 0 && col >= 0 && row < RULES.gridSize && col < RULES.gridSize;
 }
 
-function endMovement(playerIndex = state.currentPlayer) {
-  if (playerIndex !== state.currentPlayer || state.phase !== "move" || state.stepsUsed < 1) return;
-
+function validateLanding() {
+  if (state.phase !== "move" || state.stepsUsed < 1) return false;
   if (samePosition(state.pawn, state.forbiddenLanding)) {
     setStatus(
       "Destination interdite",
       "Le pion ne peut pas terminer sur la case depuis laquelle l’adversaire l’a déplacé au tour précédent.",
       "Déplacement",
     );
+    return false;
+  }
+  return true;
+}
+
+function commitMovement() {
+  if (!validateLanding()) return false;
+  if (state.usedBoostThisTurn) currentPlayer().boostAvailable = false;
+  state.selectedHandIds.clear();
+  return true;
+}
+
+function useEnterAction(playerIndex = state.currentPlayer) {
+  if (playerIndex !== state.currentPlayer) return;
+
+  if (state.phase === "deposit") {
+    depositSelectedTile(playerIndex);
+    return;
+  }
+  if (state.phase !== "move" || state.stepsUsed < 1) return;
+
+  const cell = currentCell();
+  const player = currentPlayer();
+  if (cell.tile) {
+    if (player.hand.length >= RULES.handLimit || !commitMovement()) return;
+    takeCurrentTile();
     return;
   }
 
-  if (state.usedBoostThisTurn) currentPlayer().boostAvailable = false;
-  state.phase = "action";
-  state.selectedHandIds.clear();
+  if (!player.hand.length || !commitMovement()) return;
+  state.phase = "deposit";
   render();
 }
 
-function takeTile(playerIndex = state.currentPlayer) {
-  if (playerIndex !== state.currentPlayer || state.phase !== "action") return;
+function takeCurrentTile() {
   const cell = currentCell();
   const player = currentPlayer();
-
-  if (!cell.tile || player.hand.length >= RULES.handLimit) return;
-
+  if (!cell?.tile || player.hand.length >= RULES.handLimit) return;
   player.hand.push(cell.tile);
   cell.tile = null;
-  state.phase = "resolve";
   state.selectedHandIds.clear();
 
   if (!hasAnyTwentyOne(player.hand)) {
     finishTurn();
     return;
   }
-
+  state.phase = "resolve";
   render();
 }
 
 function toggleHandTile(playerIndex, tileId) {
-  if (playerIndex !== state.currentPlayer || !new Set(["action", "resolve"]).has(state.phase)) return;
-
+  if (playerIndex !== state.currentPlayer || !new Set(["deposit", "resolve"]).has(state.phase)) return;
   if (state.selectedHandIds.has(tileId)) {
     state.selectedHandIds.delete(tileId);
   } else {
-    const selectionLimit = currentCell().tile === null && state.phase === "action" ? 1 : 3;
+    const selectionLimit = state.phase === "deposit" ? 1 : 3;
     if (state.selectedHandIds.size >= selectionLimit) return;
     state.selectedHandIds.add(tileId);
   }
@@ -283,16 +282,14 @@ function toggleHandTile(playerIndex, tileId) {
 }
 
 function scoreSelectedTiles(playerIndex = state.currentPlayer) {
-  if (playerIndex !== state.currentPlayer || !new Set(["action", "resolve"]).has(state.phase)) return;
+  if (playerIndex !== state.currentPlayer || state.phase !== "resolve") return;
   const player = currentPlayer();
   const selected = selectedTiles();
-
   if (selected.length !== 3 || selected.reduce((sum, tile) => sum + tile.value, 0) !== 21) return;
 
   const allSevens = selected.every((tile) => tile.value === 7);
   const allClovers = selected.every((tile) => tile.clover);
   const points = allSevens || allClovers ? 2 : 1;
-
   player.roundScore += points;
   const selectedIds = new Set(selected.map((tile) => tile.id));
   player.hand = player.hand.filter((tile) => !selectedIds.has(tile.id));
@@ -318,13 +315,11 @@ function scoreSelectedTiles(playerIndex = state.currentPlayer) {
 }
 
 function depositSelectedTile(playerIndex = state.currentPlayer) {
-  if (playerIndex !== state.currentPlayer || state.phase !== "action" || currentCell().tile !== null || state.selectedHandIds.size !== 1) return;
-
+  if (playerIndex !== state.currentPlayer || state.phase !== "deposit" || currentCell()?.tile !== null || state.selectedHandIds.size !== 1) return;
   const player = currentPlayer();
   const [tileId] = state.selectedHandIds;
   const tileIndex = player.hand.findIndex((tile) => tile.id === tileId);
   if (tileIndex < 0) return;
-
   const [tile] = player.hand.splice(tileIndex, 1);
   currentCell().tile = tile;
   state.selectedHandIds.clear();
@@ -332,8 +327,13 @@ function depositSelectedTile(playerIndex = state.currentPlayer) {
 }
 
 function passTurn(playerIndex = state.currentPlayer) {
-  if (playerIndex !== state.currentPlayer || !new Set(["action", "resolve"]).has(state.phase)) return;
-  finishTurn();
+  if (playerIndex !== state.currentPlayer) return;
+  if (state.phase === "move") {
+    if (!commitMovement()) return;
+    finishTurn();
+    return;
+  }
+  if (new Set(["deposit", "resolve"]).has(state.phase)) finishTurn();
 }
 
 function finishTurn() {
@@ -346,7 +346,6 @@ function finishTurn() {
 function winRound(pointsJustScored) {
   const player = currentPlayer();
   player.matchScore += 1;
-
   if (player.matchScore >= RULES.roundsToWinMatch) {
     state.phase = "match-over";
     showMessage({
@@ -363,10 +362,7 @@ function winRound(pointsJustScored) {
       title: `${player.name} remporte le round`,
       message: "Un nouveau plateau va être généré. Chaque joueur récupérera son déplacement de 5.",
       button: "Round suivant",
-      after: () => {
-        state.roundNumber += 1;
-        startRound();
-      },
+      after: () => { state.roundNumber += 1; startRound(); },
     });
   }
   render();
@@ -403,17 +399,9 @@ function selectedTiles() {
   return currentPlayer().hand.filter((tile) => state.selectedHandIds.has(tile.id));
 }
 
-function currentPlayer() {
-  return state.players[state.currentPlayer];
-}
-
-function currentCell() {
-  return state.board[state.pawn.row]?.[state.pawn.col];
-}
-
-function samePosition(first, second) {
-  return Boolean(first && second && first.row === second.row && first.col === second.col);
-}
+function currentPlayer() { return state.players[state.currentPlayer]; }
+function currentCell() { return state.board[state.pawn.row]?.[state.pawn.col]; }
+function samePosition(first, second) { return Boolean(first && second && first.row === second.row && first.col === second.col); }
 
 function render() {
   renderPlayers();
@@ -427,7 +415,6 @@ function renderPlayers() {
   state.players.forEach((player, index) => {
     const panel = elements.players[index];
     const active = index === state.currentPlayer && !new Set(["idle", "memory", "round-over", "match-over"]).has(state.phase);
-
     panel.name.textContent = player.name;
     panel.roundScore.textContent = String(player.roundScore);
     panel.matchScore.textContent = String(player.matchScore);
@@ -443,23 +430,16 @@ function renderPlayers() {
 function renderStatus() {
   elements.memoryTimer.hidden = state.phase !== "memory";
   const player = currentPlayer();
-
   switch (state.phase) {
     case "memory":
       setStatus("Mémorisez le plateau", "Les 49 tuiles seront bientôt retournées face cachée.", "Mémorisation");
       break;
     case "move":
-      setStatus(`${player.name} déplace le pion`, `Effectuez de 1 à ${state.moveLimit} pas, puis terminez le déplacement.`, "Déplacement");
+      setStatus(`${player.name} déplace le pion`, `Après au moins 1 pas : Entrée pour agir sur la case, Ctrl pour passer. Maximum : ${state.moveLimit} pas.`, "Déplacement");
       break;
-    case "action": {
-      const cell = currentCell();
-      if (cell.tile) {
-        setStatus(`${player.name} est sur une tuile`, player.hand.length < RULES.handLimit ? "Prenez la tuile ou passez votre tour." : "Votre stockage est plein : vous ne pouvez pas prendre cette tuile.", "Action");
-      } else {
-        setStatus(`${player.name} est sur une case vide`, player.hand.length ? "Sélectionnez une tuile à déposer, ou passez votre tour." : "Vous n’avez aucune tuile à déposer.", "Action");
-      }
+    case "deposit":
+      setStatus(`${player.name} est sur une case vide`, "Sélectionnez une tuile à déposer, puis cliquez sur Déposer ou appuyez sur Entrée.", "Dépôt");
       break;
-    }
     case "resolve":
       setStatus(`${player.name} peut former 21`, "Sélectionnez exactement trois tuiles puis validez la combinaison.", "Résolution");
       break;
@@ -482,7 +462,6 @@ function setStatus(title, message, label) {
 
 function renderBoard() {
   elements.board.replaceChildren();
-
   state.board.flat().forEach((cell) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -494,8 +473,7 @@ function renderBoard() {
     const current = samePosition(cell, state.pawn);
     const reachable = state.phase === "move" && isAdjacent(cell, state.pawn) && state.stepsUsed < state.moveLimit;
     const forbidden = samePosition(cell, state.forbiddenLanding);
-
-    button.classList.toggle("cell-current", current && new Set(["action", "resolve"]).has(state.phase));
+    button.classList.toggle("cell-current", current && new Set(["deposit", "resolve"]).has(state.phase));
     button.classList.toggle("cell-reachable", reachable);
     button.classList.toggle("cell-forbidden", forbidden && state.phase === "move");
     button.classList.toggle("cell-empty", !cell.tile);
@@ -503,7 +481,7 @@ function renderBoard() {
 
     if (cell.tile) {
       const tile = document.createElement("span");
-      const showFace = state.phase === "memory" || (current && new Set(["action", "resolve"]).has(state.phase));
+      const showFace = state.phase === "memory" || (current && new Set(["deposit", "resolve"]).has(state.phase));
       tile.className = `tile${showFace ? " tile-visible" : ""}`;
       tile.innerHTML = `<span class="tile-number">${cell.tile.value}</span>${cell.tile.clover ? '<span class="tile-suit" aria-label="trèfle">♣</span>' : ""}`;
       button.append(tile);
@@ -514,7 +492,7 @@ function renderBoard() {
 
     if (current) {
       const pawn = document.createElement("span");
-      pawn.className = "pawn";
+      pawn.className = `pawn${state.phase === "memory" ? " pawn-memory" : ""}`;
       pawn.setAttribute("aria-hidden", "true");
       button.append(pawn);
     }
@@ -552,11 +530,10 @@ function renderHands() {
         panel.hand.append(placeholder);
         continue;
       }
-
       const button = document.createElement("button");
       button.type = "button";
       button.className = "hand-tile";
-      button.disabled = !active || !new Set(["action", "resolve"]).has(state.phase);
+      button.disabled = !active || !new Set(["deposit", "resolve"]).has(state.phase);
       button.classList.toggle("hand-tile-selected", active && state.selectedHandIds.has(tile.id));
       button.innerHTML = `<span>${tile.value}</span>${tile.clover ? '<span class="tile-suit" aria-label="trèfle">♣</span>' : ""}`;
       button.setAttribute("aria-pressed", String(active && state.selectedHandIds.has(tile.id)));
@@ -567,16 +544,10 @@ function renderHands() {
 
     const selected = active ? selectedTiles() : [];
     panel.selectedSum.textContent = String(selected.reduce((total, tile) => total + tile.value, 0));
-
-    if (!active) {
-      panel.selectionHelp.textContent = "Zone inactive pendant le tour adverse.";
-    } else if (state.phase === "action" && currentCell()?.tile === null) {
-      panel.selectionHelp.textContent = "Sélectionnez une tuile à déposer sur cette case vide.";
-    } else if (state.phase === "resolve") {
-      panel.selectionHelp.textContent = "Sélectionnez trois tuiles dont la somme vaut 21.";
-    } else {
-      panel.selectionHelp.textContent = "Les combinaisons de trois tuiles sont évaluées dans votre stockage.";
-    }
+    if (!active) panel.selectionHelp.textContent = "Zone inactive pendant le tour adverse.";
+    else if (state.phase === "deposit") panel.selectionHelp.textContent = "Sélectionnez une tuile à déposer sur cette case vide.";
+    else if (state.phase === "resolve") panel.selectionHelp.textContent = "Sélectionnez trois tuiles dont la somme vaut 21.";
+    else panel.selectionHelp.textContent = "Les combinaisons de trois tuiles sont évaluées dans votre stockage.";
   });
 }
 
@@ -586,27 +557,36 @@ function renderControls() {
   const selected = selectedTiles();
   const selectedSum = selected.reduce((sum, tile) => sum + tile.value, 0);
   const movePhase = state.phase === "move";
-  const actionPhase = state.phase === "action";
+  const canStopMoving = movePhase && state.stepsUsed >= 1;
 
   elements.players.forEach((panel, playerIndex) => {
     const active = playerIndex === state.currentPlayer;
-
     panel.stepsUsed.textContent = active ? String(state.stepsUsed) : "0";
     panel.stepLimit.textContent = active ? String(state.moveLimit) : String(RULES.normalMove);
     panel.boostToggle.checked = active && state.usedBoostThisTurn;
     panel.boostToggle.disabled = !active || !movePhase || state.stepsUsed > 0 || state.firstTurnOfRound || !player.boostAvailable;
 
     panel.directionButtons.forEach((button) => {
-      const direction = button.dataset.direction;
-      button.disabled = !active || !movePhase || state.stepsUsed >= state.moveLimit || !canMoveDirection(direction);
+      button.disabled = !active || !movePhase || state.stepsUsed >= state.moveLimit || !canMoveDirection(button.dataset.direction);
     });
 
-    panel.endMoveButton.disabled = !active || !movePhase || state.stepsUsed < 1;
-    panel.takeButton.hidden = active && actionPhase ? !cell?.tile : false;
-    panel.takeButton.disabled = !active || !actionPhase || !cell?.tile || player.hand.length >= RULES.handLimit;
-    panel.depositButton.hidden = active && actionPhase ? cell?.tile !== null : false;
-    panel.depositButton.disabled = !active || !actionPhase || cell?.tile !== null || state.selectedHandIds.size !== 1;
-    panel.passButton.disabled = !active || !new Set(["action", "resolve"]).has(state.phase);
+    let enterLabel = "Prendre la tuile";
+    let enterEnabled = false;
+    if (active && canStopMoving && cell?.tile && player.hand.length < RULES.handLimit) enterEnabled = true;
+    if (active && canStopMoving && cell?.tile === null && player.hand.length > 0) {
+      enterEnabled = true;
+      enterLabel = "Déposer une tuile";
+    }
+    if (active && state.phase === "deposit") {
+      enterLabel = "Déposer la sélection";
+      enterEnabled = state.selectedHandIds.size === 1;
+    }
+    panel.takeLabel.textContent = enterLabel;
+    panel.takeButton.disabled = !enterEnabled;
+    panel.passButton.disabled = !active || !(canStopMoving || new Set(["deposit", "resolve"]).has(state.phase));
+
+    panel.depositButton.hidden = active ? state.phase !== "deposit" : false;
+    panel.depositButton.disabled = !active || state.phase !== "deposit" || state.selectedHandIds.size !== 1;
     panel.scoreButton.hidden = active ? state.phase !== "resolve" : false;
     panel.scoreButton.disabled = !active || state.phase !== "resolve" || selected.length !== 3 || selectedSum !== 21;
   });
@@ -619,12 +599,24 @@ function canMoveDirection(direction) {
 }
 
 function handleKeyboard(event) {
-  if (state.phase !== "move") return;
   const keyMap = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
   const direction = keyMap[event.key];
-  if (!direction) return;
-  event.preventDefault();
-  movePawn(direction);
+  if (direction && state.phase === "move") {
+    event.preventDefault();
+    movePawn(direction);
+    return;
+  }
+
+  if (event.key === "Enter" && new Set(["move", "deposit"]).has(state.phase)) {
+    event.preventDefault();
+    useEnterAction();
+    return;
+  }
+
+  if (event.key === "Control" && (state.phase === "move" ? state.stepsUsed >= 1 : new Set(["deposit", "resolve"]).has(state.phase))) {
+    event.preventDefault();
+    passTurn();
+  }
 }
 
 elements.setupForm.addEventListener("submit", startMatch);
@@ -632,18 +624,14 @@ elements.newMatchButton.addEventListener("click", () => elements.setupDialog.sho
 elements.players.forEach((panel, playerIndex) => {
   panel.boostToggle.addEventListener("change", () => chooseBoost(playerIndex));
   panel.directionButtons.forEach((button) => button.addEventListener("click", () => movePawn(button.dataset.direction, playerIndex)));
-  panel.endMoveButton.addEventListener("click", () => endMovement(playerIndex));
-  panel.takeButton.addEventListener("click", () => takeTile(playerIndex));
+  panel.takeButton.addEventListener("click", () => useEnterAction(playerIndex));
+  panel.passButton.addEventListener("click", () => passTurn(playerIndex));
   panel.depositButton.addEventListener("click", () => depositSelectedTile(playerIndex));
   panel.scoreButton.addEventListener("click", () => scoreSelectedTiles(playerIndex));
-  panel.passButton.addEventListener("click", () => passTurn(playerIndex));
 });
 elements.dialogButton.addEventListener("click", closeMessage);
 document.addEventListener("keydown", handleKeyboard);
-
-elements.setupDialog.addEventListener("cancel", (event) => {
-  if (state.phase === "idle") event.preventDefault();
-});
+elements.setupDialog.addEventListener("cancel", (event) => { if (state.phase === "idle") event.preventDefault(); });
 
 elements.setupDialog.showModal();
 render();
