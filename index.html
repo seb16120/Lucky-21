@@ -6,7 +6,16 @@
   <meta name="description" content="Lucky 21, jeu local de mémorisation et d'addition pour deux joueurs.">
   <title>Lucky 21</title>
   <link rel="stylesheet" href="style.css">
-  <style>.cell:disabled,.hand-tile:disabled{opacity:1}.cell:disabled{cursor:default}</style>
+  <style>
+    .cell:disabled,.hand-tile:disabled{opacity:1}.cell:disabled{cursor:default}
+    .move-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(.35rem,.65vmin,.7rem);margin-top:clamp(.35rem,.7vmin,.7rem)}
+    .shortcut-button{display:flex;align-items:center;justify-content:center;gap:clamp(.25rem,.45vmin,.5rem);min-width:0}
+    .shortcut-button kbd{display:inline-grid;place-items:center;min-width:clamp(1.8rem,3.4vmin,3rem);padding:.2em .4em;border:.08rem solid currentColor;border-radius:.42em;background:rgba(255,255,255,.18);box-shadow:inset 0 -.12em 0 rgba(0,0,0,.16);font:inherit;font-size:.82em;white-space:nowrap}
+    .shortcut-button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cell .pawn.pawn-memory{top:6%!important;left:6%!important;right:auto!important;bottom:auto!important;width:22%!important;transform:none!important;border-width:clamp(.08rem,.16vmin,.16rem)!important;box-shadow:0 .18rem .45rem rgba(0,0,0,.45)!important}
+    .cell .pawn.pawn-memory::after{bottom:-22%!important;height:30%!important}
+    @media (max-width:48rem){.move-actions{grid-template-columns:1fr}.shortcut-button span{white-space:normal}}
+  </style>
 </head>
 <body>
   <main class="app-shell">
@@ -39,113 +48,71 @@
     <section class="game-layout">
       <aside id="player-panel-0" class="player-zone player-zone-active" data-player="0">
         <header class="player-header">
-          <div>
-            <p class="player-label">Joueur 1</p>
-            <h2 id="player-name-0">Joueur 1</h2>
-          </div>
+          <div><p class="player-label">Joueur 1</p><h2 id="player-name-0">Joueur 1</h2></div>
           <span id="turn-state-0" class="turn-state">À vous</span>
         </header>
-
         <div class="score-grid" aria-label="Scores du joueur 1">
           <span>Round <strong id="round-score-0">0</strong>/4</span>
           <span>Manches <strong id="match-score-0">0</strong>/2</span>
           <span>×5 <strong id="boost-0">disponible</strong></span>
         </div>
-
         <section class="panel-section movement-section">
-          <div class="section-heading">
-            <h3>Déplacement</h3>
-            <strong><span id="steps-used-0">0</span>/<span id="step-limit-0">3</span></strong>
-          </div>
-          <label class="boost-toggle" for="boost-toggle-0">
-            <input id="boost-toggle-0" type="checkbox">
-            <span>Utiliser mon déplacement de 5</span>
-          </label>
+          <div class="section-heading"><h3>Déplacement</h3><strong><span id="steps-used-0">0</span>/<span id="step-limit-0">3</span></strong></div>
+          <label class="boost-toggle" for="boost-toggle-0"><input id="boost-toggle-0" type="checkbox"><span>Utiliser mon déplacement de 5</span></label>
           <div class="direction-pad" aria-label="Déplacement du pion pour le joueur 1">
             <button class="direction direction-up" type="button" data-player="0" data-direction="up" aria-label="Monter">↑</button>
             <button class="direction direction-left" type="button" data-player="0" data-direction="left" aria-label="Aller à gauche">←</button>
             <button class="direction direction-down" type="button" data-player="0" data-direction="down" aria-label="Descendre">↓</button>
             <button class="direction direction-right" type="button" data-player="0" data-direction="right" aria-label="Aller à droite">→</button>
           </div>
-          <button id="end-move-button-0" class="button button-primary button-full" type="button">Terminer le déplacement</button>
-        </section>
-
-        <section class="panel-section storage-section">
-          <div class="section-heading">
-            <h3>Stockage</h3>
-            <span id="hand-count-0">0/4</span>
+          <div class="move-actions">
+            <button id="take-button-0" class="button button-primary shortcut-button" type="button"><kbd>↵ Entrée</kbd><span>Prendre la tuile</span></button>
+            <button id="pass-button-0" class="button button-ghost shortcut-button" type="button"><kbd>Ctrl</kbd><span>Passer le tour</span></button>
           </div>
+        </section>
+        <section class="panel-section storage-section">
+          <div class="section-heading"><h3>Stockage</h3><span id="hand-count-0">0/4</span></div>
           <div id="hand-0" class="hand" aria-label="Tuiles stockées par le joueur 1"></div>
           <p id="selection-help-0" class="hint">Les combinaisons de trois tuiles sont évaluées ici.</p>
-          <div class="sum-line">
-            <span>Somme sélectionnée</span>
-            <strong id="selected-sum-0">0</strong>
-          </div>
+          <div class="sum-line"><span>Somme sélectionnée</span><strong id="selected-sum-0">0</strong></div>
           <button id="score-button-0" class="button button-gold button-full" type="button">Valider ce 21</button>
           <button id="deposit-button-0" class="button button-secondary button-full" type="button">Déposer la tuile sélectionnée</button>
         </section>
-
-        <section class="panel-section actions-section">
-          <button id="take-button-0" class="button button-primary button-full" type="button">Prendre la tuile</button>
-          <button id="pass-button-0" class="button button-ghost button-full" type="button">Passer le tour</button>
-        </section>
       </aside>
 
-      <div class="board-wrap">
-        <div id="board" class="board" role="grid" aria-label="Plateau Lucky 21"></div>
-      </div>
+      <div class="board-wrap"><div id="board" class="board" role="grid" aria-label="Plateau Lucky 21"></div></div>
 
       <aside id="player-panel-1" class="player-zone player-zone-waiting" data-player="1" aria-disabled="true">
         <header class="player-header">
-          <div>
-            <p class="player-label">Joueur 2</p>
-            <h2 id="player-name-1">Joueur 2</h2>
-          </div>
+          <div><p class="player-label">Joueur 2</p><h2 id="player-name-1">Joueur 2</h2></div>
           <span id="turn-state-1" class="turn-state">En attente</span>
         </header>
-
         <div class="score-grid" aria-label="Scores du joueur 2">
           <span>Round <strong id="round-score-1">0</strong>/4</span>
           <span>Manches <strong id="match-score-1">0</strong>/2</span>
           <span>×5 <strong id="boost-1">disponible</strong></span>
         </div>
-
         <section class="panel-section movement-section">
-          <div class="section-heading">
-            <h3>Déplacement</h3>
-            <strong><span id="steps-used-1">0</span>/<span id="step-limit-1">3</span></strong>
-          </div>
-          <label class="boost-toggle" for="boost-toggle-1">
-            <input id="boost-toggle-1" type="checkbox">
-            <span>Utiliser mon déplacement de 5</span>
-          </label>
+          <div class="section-heading"><h3>Déplacement</h3><strong><span id="steps-used-1">0</span>/<span id="step-limit-1">3</span></strong></div>
+          <label class="boost-toggle" for="boost-toggle-1"><input id="boost-toggle-1" type="checkbox"><span>Utiliser mon déplacement de 5</span></label>
           <div class="direction-pad" aria-label="Déplacement du pion pour le joueur 2">
             <button class="direction direction-up" type="button" data-player="1" data-direction="up" aria-label="Monter">↑</button>
             <button class="direction direction-left" type="button" data-player="1" data-direction="left" aria-label="Aller à gauche">←</button>
             <button class="direction direction-down" type="button" data-player="1" data-direction="down" aria-label="Descendre">↓</button>
             <button class="direction direction-right" type="button" data-player="1" data-direction="right" aria-label="Aller à droite">→</button>
           </div>
-          <button id="end-move-button-1" class="button button-primary button-full" type="button">Terminer le déplacement</button>
-        </section>
-
-        <section class="panel-section storage-section">
-          <div class="section-heading">
-            <h3>Stockage</h3>
-            <span id="hand-count-1">0/4</span>
+          <div class="move-actions">
+            <button id="take-button-1" class="button button-primary shortcut-button" type="button"><kbd>↵ Entrée</kbd><span>Prendre la tuile</span></button>
+            <button id="pass-button-1" class="button button-ghost shortcut-button" type="button"><kbd>Ctrl</kbd><span>Passer le tour</span></button>
           </div>
+        </section>
+        <section class="panel-section storage-section">
+          <div class="section-heading"><h3>Stockage</h3><span id="hand-count-1">0/4</span></div>
           <div id="hand-1" class="hand" aria-label="Tuiles stockées par le joueur 2"></div>
           <p id="selection-help-1" class="hint">Les combinaisons de trois tuiles sont évaluées ici.</p>
-          <div class="sum-line">
-            <span>Somme sélectionnée</span>
-            <strong id="selected-sum-1">0</strong>
-          </div>
+          <div class="sum-line"><span>Somme sélectionnée</span><strong id="selected-sum-1">0</strong></div>
           <button id="score-button-1" class="button button-gold button-full" type="button">Valider ce 21</button>
           <button id="deposit-button-1" class="button button-secondary button-full" type="button">Déposer la tuile sélectionnée</button>
-        </section>
-
-        <section class="panel-section actions-section">
-          <button id="take-button-1" class="button button-primary button-full" type="button">Prendre la tuile</button>
-          <button id="pass-button-1" class="button button-ghost button-full" type="button">Passer le tour</button>
         </section>
       </aside>
     </section>
@@ -153,34 +120,16 @@
 
   <dialog id="setup-dialog" class="dialog">
     <form id="setup-form" method="dialog">
-      <p class="eyebrow">Nouvelle partie</p>
-      <h2>Préparer Lucky 21</h2>
-      <label>
-        Nom du joueur 1
-        <input id="setup-name-0" name="player1" value="Joueur 1" maxlength="18" required>
-      </label>
-      <label>
-        Nom du joueur 2
-        <input id="setup-name-1" name="player2" value="Joueur 2" maxlength="18" required>
-      </label>
-      <label>
-        Temps de mémorisation
-        <span class="input-with-suffix">
-          <input id="memory-seconds" name="memorySeconds" type="number" min="5" max="60" value="10" required>
-          <span>secondes</span>
-        </span>
-      </label>
+      <p class="eyebrow">Nouvelle partie</p><h2>Préparer Lucky 21</h2>
+      <label>Nom du joueur 1<input id="setup-name-0" name="player1" value="Joueur 1" maxlength="18" required></label>
+      <label>Nom du joueur 2<input id="setup-name-1" name="player2" value="Joueur 2" maxlength="18" required></label>
+      <label>Temps de mémorisation<span class="input-with-suffix"><input id="memory-seconds" name="memorySeconds" type="number" min="5" max="60" value="10" required><span>secondes</span></span></label>
       <button class="button button-gold button-full" type="submit">Commencer le match</button>
     </form>
   </dialog>
 
   <dialog id="message-dialog" class="dialog dialog-message">
-    <div>
-      <p id="dialog-kicker" class="eyebrow">Lucky 21</p>
-      <h2 id="dialog-title">Round terminé</h2>
-      <p id="dialog-message">Le prochain plateau est prêt.</p>
-      <button id="dialog-button" class="button button-gold button-full" type="button">Continuer</button>
-    </div>
+    <div><p id="dialog-kicker" class="eyebrow">Lucky 21</p><h2 id="dialog-title">Round terminé</h2><p id="dialog-message">Le prochain plateau est prêt.</p><button id="dialog-button" class="button button-gold button-full" type="button">Continuer</button></div>
   </dialog>
 
   <script src="script.js"></script>
