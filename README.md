@@ -1,6 +1,6 @@
 # Lucky 21
 
-Prototype web local à deux joueurs d’un jeu de mémorisation et de déplacement.
+Prototype web local à deux joueurs d’un jeu de mémorisation, de déplacement et d’addition.
 
 Le plateau est brièvement visible au début de chaque round. Les tuiles sont ensuite cachées et les joueurs déplacent un pion commun pour récupérer, de mémoire, des tuiles permettant de former **21 avec exactement trois tuiles**.
 
@@ -23,10 +23,12 @@ Pour le publier avec GitHub Pages :
 - Le premier joueur à atteindre **4 points** remporte le round.
 - Après un 21, le round continue sur le même plateau si personne n’a encore atteint 4 points.
 
-### Mémorisation
+### Plateau et mémorisation
 
-- Les 49 tuiles d’une grille de 7 × 7 sont visibles pendant une durée réglable.
-- Elles sont ensuite retournées face cachée.
+- La grille comporte **49 tuiles** sur 7 × 7.
+- Les valeurs vont de **1 à 17**.
+- Chaque valeur existe initialement en trois exemplaires, soit 51 tuiles, puis **deux exemplaires sont retirés aléatoirement** à chaque nouveau plateau.
+- Les 49 tuiles restantes sont visibles pendant une durée réglable, puis retournées face cachée.
 - Le pion commun commence au centre du plateau.
 
 ### Déplacement
@@ -42,7 +44,7 @@ Pour le publier avec GitHub Pages :
 - Un joueur peut conserver jusqu’à **4 tuiles**.
 - En terminant sur une case occupée, il peut prendre la tuile si son stockage n’est pas plein.
 - En terminant sur une case vide, il peut y déposer l’une de ses tuiles.
-- Lorsqu’il possède quatre tuiles sans pouvoir former 21, il doit donc atteindre une case vide et déposer une tuile avant d’en récupérer une autre.
+- Lorsqu’il possède quatre tuiles sans pouvoir former 21, il doit atteindre une case vide et déposer une tuile avant d’en récupérer une autre.
 
 ### Marquer des points
 
@@ -55,6 +57,13 @@ Le joueur sélectionne exactement trois tuiles stockées dont la somme vaut 21 :
 
 Les trois tuiles utilisées sont retirées du jeu. Une combinaison qui est à la fois « trois 7 » et « trois trèfles » rapporte 2 points, pas 4.
 
+## Interface
+
+- Le panneau du joueur 1 se trouve à gauche et celui du joueur 2 à droite.
+- Le panneau actif contient les commandes utilisables ; le panneau du joueur en attente est grisé.
+- Les dimensions utilisent principalement des unités relatives et s’adaptent à la largeur, à la hauteur et au rapport d’écran.
+- Sur les écrans plus étroits, le plateau et les panneaux se réorganisent automatiquement.
+
 ## Commandes
 
 - Cliquez sur une case adjacente au pion, ou utilisez les flèches du clavier, pour avancer.
@@ -66,4 +75,4 @@ Les trois tuiles utilisées sont retirées du jeu. Une combinaison qui est à la
 
 La boucle de jeu locale est fonctionnelle : nouveau plateau, mémorisation, déplacements, bonus individuel de 5, prise et dépôt, stockage de quatre tuiles, détection des 21, score des rounds et BO3.
 
-La composition exacte du paquet de 49 tuiles n’ayant pas encore été fixée, elle est provisoire et centralisée dans la fonction `createDeck()` de `script.js`. La durée de mémorisation est réglable sur l’écran de départ.
+La répartition exacte des trèfles reste provisoire et centralisée dans la fonction `createDeck()` de `script.js`. La durée de mémorisation est réglable sur l’écran de départ.
