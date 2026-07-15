@@ -2,7 +2,7 @@
 
 Prototype web local à deux joueurs d’un jeu de mémorisation, de déplacement et d’addition.
 
-Le plateau est brièvement visible au début de chaque round. Les tuiles sont ensuite cachées et les joueurs déplacent un pion commun pour récupérer, de mémoire, des tuiles permettant de former **21 avec exactement trois tuiles**.
+Le plateau est visible au début de chaque round. Les tuiles sont ensuite cachées et les joueurs déplacent un pion commun pour récupérer, de mémoire, trois tuiles dont la somme vaut 21.
 
 ## Lancer le jeu
 
@@ -25,11 +25,10 @@ Pour le publier avec GitHub Pages :
 
 ### Plateau et mémorisation
 
-- La grille comporte **49 tuiles** sur 7 × 7.
-- Les valeurs vont de **1 à 17**.
-- Chaque valeur existe initialement en trois exemplaires, soit 51 tuiles, puis **deux exemplaires sont retirés aléatoirement** à chaque nouveau plateau.
-- Les 49 tuiles restantes sont visibles pendant une durée réglable, puis retournées face cachée.
-- Le pion commun commence au centre du plateau.
+- La grille contient **49 tuiles**, disposées en 7 × 7.
+- Les valeurs vont de **1 à 17**, avec trois exemplaires de chaque valeur avant la création du plateau.
+- Deux exemplaires sont retirés aléatoirement à chaque nouveau round afin d’obtenir 49 tuiles.
+- Le pion commun commence au centre. Pendant la mémorisation, il est réduit et placé dans un coin de la case afin de laisser visible la tuile centrale.
 
 ### Déplacement
 
@@ -38,12 +37,15 @@ Pour le publier avec GitHub Pages :
 - **Une fois par joueur et par round**, le joueur peut choisir un déplacement allant jusqu’à **5 pas**.
 - Le premier déplacement du premier joueur d’un round est limité à un pas.
 - Le pion ne peut pas terminer immédiatement sur la case depuis laquelle l’adversaire l’a déplacé au tour précédent.
+- Après au moins un pas, le joueur choisit directement son action :
+  - **Entrée** : prendre la tuile atteinte ou commencer un dépôt sur une case vide ;
+  - **Ctrl** : passer le tour.
 
 ### Tuiles et stockage
 
 - Un joueur peut conserver jusqu’à **4 tuiles**.
-- En terminant sur une case occupée, il peut prendre la tuile si son stockage n’est pas plein.
-- En terminant sur une case vide, il peut y déposer l’une de ses tuiles.
+- Sur une case occupée, Entrée prend immédiatement la tuile si le stockage n’est pas plein.
+- Sur une case vide, Entrée ouvre le dépôt : le joueur sélectionne une tuile stockée, puis clique sur le bouton de dépôt ou appuie de nouveau sur Entrée.
 - Lorsqu’il possède quatre tuiles sans pouvoir former 21, il doit atteindre une case vide et déposer une tuile avant d’en récupérer une autre.
 
 ### Marquer des points
@@ -57,22 +59,15 @@ Le joueur sélectionne exactement trois tuiles stockées dont la somme vaut 21 :
 
 Les trois tuiles utilisées sont retirées du jeu. Une combinaison qui est à la fois « trois 7 » et « trois trèfles » rapporte 2 points, pas 4.
 
-## Interface
-
-- Le panneau du joueur 1 se trouve à gauche et celui du joueur 2 à droite.
-- Le panneau actif contient les commandes utilisables ; le panneau du joueur en attente est grisé.
-- Les dimensions utilisent principalement des unités relatives et s’adaptent à la largeur, à la hauteur et au rapport d’écran.
-- Sur les écrans plus étroits, le plateau et les panneaux se réorganisent automatiquement.
-
 ## Commandes
 
-- Cliquez sur une case adjacente au pion, ou utilisez les flèches du clavier, pour avancer.
-- Activez **Utiliser mon déplacement de 5** avant le premier pas du tour.
-- Cliquez sur **Terminer le déplacement** lorsque la destination est atteinte.
-- Sélectionnez des tuiles dans votre stockage pour valider un 21 ou en déposer une.
+- **Flèches du clavier** ou clic sur une case adjacente : déplacer le pion.
+- **Entrée** après au moins un déplacement : agir sur la case atteinte.
+- **Ctrl** après au moins un déplacement : passer le tour.
+- Le déplacement de 5 doit être activé avant le premier pas du tour.
 
 ## État du prototype
 
 La boucle de jeu locale est fonctionnelle : nouveau plateau, mémorisation, déplacements, bonus individuel de 5, prise et dépôt, stockage de quatre tuiles, détection des 21, score des rounds et BO3.
 
-La répartition exacte des trèfles reste provisoire et centralisée dans la fonction `createDeck()` de `script.js`. La durée de mémorisation est réglable sur l’écran de départ.
+La répartition exacte des tuiles trèfle reste provisoire et est centralisée dans `createDeck()` dans `script.js`.
