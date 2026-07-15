@@ -8,6 +8,10 @@ const RULES = Object.freeze({
   firstTurnMove: 1,
   pointsToWinRound: 4,
   roundsToWinMatch: 2,
+  minimumTileValue: 1,
+  maximumTileValue: 17,
+  copiesPerValue: 3,
+  tilesRemovedPerRound: 2,
 });
 
 const elements = {
@@ -17,36 +21,38 @@ const elements = {
   setupForm: document.querySelector("#setup-form"),
   setupNames: [document.querySelector("#setup-name-0"), document.querySelector("#setup-name-1")],
   memorySeconds: document.querySelector("#memory-seconds"),
-  playerNames: [document.querySelector("#player-name-0"), document.querySelector("#player-name-1")],
-  playerCards: [document.querySelector("#player-card-0"), document.querySelector("#player-card-1")],
-  roundScores: [document.querySelector("#round-score-0"), document.querySelector("#round-score-1")],
-  matchScores: [document.querySelector("#match-score-0"), document.querySelector("#match-score-1")],
-  boosts: [document.querySelector("#boost-0"), document.querySelector("#boost-1")],
   roundNumber: document.querySelector("#round-number"),
   phaseLabel: document.querySelector("#phase-label"),
   statusTitle: document.querySelector("#status-title"),
   statusMessage: document.querySelector("#status-message"),
   memoryTimer: document.querySelector("#memory-timer"),
   timerValue: document.querySelector("#timer-value"),
-  stepsUsed: document.querySelector("#steps-used"),
-  stepLimit: document.querySelector("#step-limit"),
-  boostToggle: document.querySelector("#boost-toggle"),
-  directionButtons: [...document.querySelectorAll("[data-direction]")],
-  endMoveButton: document.querySelector("#end-move-button"),
-  handTitle: document.querySelector("#hand-title"),
-  handCount: document.querySelector("#hand-count"),
-  hand: document.querySelector("#hand"),
-  selectionHelp: document.querySelector("#selection-help"),
-  selectedSum: document.querySelector("#selected-sum"),
-  scoreButton: document.querySelector("#score-button"),
-  depositButton: document.querySelector("#deposit-button"),
-  takeButton: document.querySelector("#take-button"),
-  passButton: document.querySelector("#pass-button"),
   messageDialog: document.querySelector("#message-dialog"),
   dialogKicker: document.querySelector("#dialog-kicker"),
   dialogTitle: document.querySelector("#dialog-title"),
   dialogMessage: document.querySelector("#dialog-message"),
   dialogButton: document.querySelector("#dialog-button"),
+  players: [0, 1].map((index) => ({
+    panel: document.querySelector(`#player-panel-${index}`),
+    name: document.querySelector(`#player-name-${index}`),
+    turnState: document.querySelector(`#turn-state-${index}`),
+    roundScore: document.querySelector(`#round-score-${index}`),
+    matchScore: document.querySelector(`#match-score-${index}`),
+    boost: document.querySelector(`#boost-${index}`),
+    stepsUsed: document.querySelector(`#steps-used-${index}`),
+    stepLimit: document.querySelector(`#step-limit-${index}`),
+    boostToggle: document.querySelector(`#boost-toggle-${index}`),
+    directionButtons: [...document.querySelectorAll(`[data-player="${index}"][data-direction]`)],
+    endMoveButton: document.querySelector(`#end-move-button-${index}`),
+    handCount: document.querySelector(`#hand-count-${index}`),
+    hand: document.querySelector(`#hand-${index}`),
+    selectionHelp: document.querySelector(`#selection-help-${index}`),
+    selectedSum: document.querySelector(`#selected-sum-${index}`),
+    scoreButton: document.querySelector(`#score-button-${index}`),
+    depositButton: document.querySelector(`#deposit-button-${index}`),
+    takeButton: document.querySelector(`#take-button-${index}`),
+    passButton: document.querySelector(`#pass-button-${index}`),
+  })),
 };
 
 const state = {
@@ -79,13 +85,14 @@ function createPlayer(name) {
 }
 
 function createDeck() {
-  // Composition provisoire : 49 tuiles, valeurs 1 à 11.
-  // La distribution exacte peut être remplacée ici sans modifier le reste du jeu.
   const values = [];
-  for (let value = 1; value <= 11; value += 1) {
-    for (let copy = 0; copy < 4; copy += 1) values.push(value);
+
+  for (let value = RULES.minimumTileValue; value <= RULES.maximumTileValue; value += 1) {
+    for (let copy = 0; copy < RULES.copiesPerValue; copy += 1) values.push(value);
   }
-  values.push(3, 5, 7, 9, 11);
+
+  shuffle(values);
+  values.splice(0, RULES.tilesRemovedPerRound);
 
   const deck = values.map((value, index) => ({
     id: `tile-${cryptoRandomId()}-${index}`,
@@ -93,15 +100,14 @@ function createDeck() {
     clover: false,
   }));
 
-  // Garantit plusieurs possibilités de 21 entièrement en trèfles.
+  // Répartition provisoire des trèfles, en attendant la composition physique exacte.
   const guaranteedCloverValues = [3, 4, 5, 6, 7, 7, 7, 8, 9, 10, 11];
   for (const value of guaranteedCloverValues) {
     const tile = deck.find((candidate) => candidate.value === value && !candidate.clover);
     if (tile) tile.clover = true;
   }
 
-  const remaining = deck.filter((tile) => !tile.clover);
-  shuffle(remaining);
+  const remaining = shuffle(deck.filter((tile) => !tile.clover));
   remaining.slice(0, 3).forEach((tile) => { tile.clover = true; });
 
   return shuffle(deck);
@@ -182,16 +188,17 @@ function beginTurn() {
   state.moveLimit = state.firstTurnOfRound ? RULES.firstTurnMove : RULES.normalMove;
   state.turnStart = { ...state.pawn };
   state.selectedHandIds.clear();
-  elements.boostToggle.checked = false;
+  elements.players.forEach((panel) => { panel.boostToggle.checked = false; });
   render();
 }
 
-function chooseBoost() {
+function chooseBoost(playerIndex) {
+  const panel = elements.players[playerIndex];
   const player = currentPlayer();
-  const wantsBoost = elements.boostToggle.checked;
+  const wantsBoost = panel.boostToggle.checked;
 
-  if (state.phase !== "move" || state.stepsUsed > 0 || state.firstTurnOfRound || !player.boostAvailable) {
-    elements.boostToggle.checked = state.usedBoostThisTurn;
+  if (playerIndex !== state.currentPlayer || state.phase !== "move" || state.stepsUsed > 0 || state.firstTurnOfRound || !player.boostAvailable) {
+    panel.boostToggle.checked = state.usedBoostThisTurn;
     return;
   }
 
@@ -200,8 +207,8 @@ function chooseBoost() {
   renderControls();
 }
 
-function movePawn(direction) {
-  if (state.phase !== "move" || state.stepsUsed >= state.moveLimit) return;
+function movePawn(direction, playerIndex = state.currentPlayer) {
+  if (playerIndex !== state.currentPlayer || state.phase !== "move" || state.stepsUsed >= state.moveLimit) return;
 
   const deltas = {
     up: [-1, 0],
@@ -223,8 +230,8 @@ function isInsideBoard(row, col) {
   return row >= 0 && col >= 0 && row < RULES.gridSize && col < RULES.gridSize;
 }
 
-function endMovement() {
-  if (state.phase !== "move" || state.stepsUsed < 1) return;
+function endMovement(playerIndex = state.currentPlayer) {
+  if (playerIndex !== state.currentPlayer || state.phase !== "move" || state.stepsUsed < 1) return;
 
   if (samePosition(state.pawn, state.forbiddenLanding)) {
     setStatus(
@@ -241,8 +248,8 @@ function endMovement() {
   render();
 }
 
-function takeTile() {
-  if (state.phase !== "action") return;
+function takeTile(playerIndex = state.currentPlayer) {
+  if (playerIndex !== state.currentPlayer || state.phase !== "action") return;
   const cell = currentCell();
   const player = currentPlayer();
 
@@ -261,8 +268,8 @@ function takeTile() {
   render();
 }
 
-function toggleHandTile(tileId) {
-  if (!new Set(["action", "resolve"]).has(state.phase)) return;
+function toggleHandTile(playerIndex, tileId) {
+  if (playerIndex !== state.currentPlayer || !new Set(["action", "resolve"]).has(state.phase)) return;
 
   if (state.selectedHandIds.has(tileId)) {
     state.selectedHandIds.delete(tileId);
@@ -271,12 +278,12 @@ function toggleHandTile(tileId) {
     if (state.selectedHandIds.size >= selectionLimit) return;
     state.selectedHandIds.add(tileId);
   }
-  renderHand();
+  renderHands();
   renderControls();
 }
 
-function scoreSelectedTiles() {
-  if (!new Set(["action", "resolve"]).has(state.phase)) return;
+function scoreSelectedTiles(playerIndex = state.currentPlayer) {
+  if (playerIndex !== state.currentPlayer || !new Set(["action", "resolve"]).has(state.phase)) return;
   const player = currentPlayer();
   const selected = selectedTiles();
 
@@ -310,8 +317,8 @@ function scoreSelectedTiles() {
   render();
 }
 
-function depositSelectedTile() {
-  if (state.phase !== "action" || currentCell().tile !== null || state.selectedHandIds.size !== 1) return;
+function depositSelectedTile(playerIndex = state.currentPlayer) {
+  if (playerIndex !== state.currentPlayer || state.phase !== "action" || currentCell().tile !== null || state.selectedHandIds.size !== 1) return;
 
   const player = currentPlayer();
   const [tileId] = state.selectedHandIds;
@@ -324,14 +331,13 @@ function depositSelectedTile() {
   finishTurn();
 }
 
-function passTurn() {
-  if (!new Set(["action", "resolve"]).has(state.phase)) return;
+function passTurn(playerIndex = state.currentPlayer) {
+  if (playerIndex !== state.currentPlayer || !new Set(["action", "resolve"]).has(state.phase)) return;
   finishTurn();
 }
 
 function finishTurn() {
-  const previousStart = { ...state.turnStart };
-  state.forbiddenLanding = previousStart;
+  state.forbiddenLanding = { ...state.turnStart };
   state.firstTurnOfRound = false;
   state.currentPlayer = 1 - state.currentPlayer;
   beginTurn();
@@ -410,20 +416,26 @@ function samePosition(first, second) {
 }
 
 function render() {
-  renderScoreboard();
+  renderPlayers();
   renderStatus();
   renderBoard();
-  renderHand();
+  renderHands();
   renderControls();
 }
 
-function renderScoreboard() {
+function renderPlayers() {
   state.players.forEach((player, index) => {
-    elements.playerNames[index].textContent = player.name;
-    elements.roundScores[index].textContent = String(player.roundScore);
-    elements.matchScores[index].textContent = String(player.matchScore);
-    elements.boosts[index].textContent = player.boostAvailable ? "disponible" : "utilisé";
-    elements.playerCards[index].classList.toggle("player-card-active", index === state.currentPlayer && !new Set(["idle", "memory"]).has(state.phase));
+    const panel = elements.players[index];
+    const active = index === state.currentPlayer && !new Set(["idle", "memory", "round-over", "match-over"]).has(state.phase);
+
+    panel.name.textContent = player.name;
+    panel.roundScore.textContent = String(player.roundScore);
+    panel.matchScore.textContent = String(player.matchScore);
+    panel.boost.textContent = player.boostAvailable ? "disponible" : "utilisé";
+    panel.turnState.textContent = active ? "À vous" : "En attente";
+    panel.panel.classList.toggle("player-zone-active", active);
+    panel.panel.classList.toggle("player-zone-waiting", !active);
+    panel.panel.setAttribute("aria-disabled", String(!active));
   });
   elements.roundNumber.textContent = String(state.roundNumber);
 }
@@ -525,43 +537,47 @@ function moveToAdjacentCell(row, col) {
   if (rowDelta === 0 && colDelta === 1) movePawn("right");
 }
 
-function renderHand() {
-  const player = currentPlayer();
-  elements.handTitle.textContent = `Stockage de ${player.name}`;
-  elements.handCount.textContent = `${player.hand.length}/${RULES.handLimit}`;
-  elements.hand.replaceChildren();
+function renderHands() {
+  state.players.forEach((player, playerIndex) => {
+    const panel = elements.players[playerIndex];
+    const active = playerIndex === state.currentPlayer;
+    panel.handCount.textContent = `${player.hand.length}/${RULES.handLimit}`;
+    panel.hand.replaceChildren();
 
-  for (let index = 0; index < RULES.handLimit; index += 1) {
-    const tile = player.hand[index];
-    if (!tile) {
-      const placeholder = document.createElement("span");
-      placeholder.className = "hand-placeholder";
-      elements.hand.append(placeholder);
-      continue;
+    for (let index = 0; index < RULES.handLimit; index += 1) {
+      const tile = player.hand[index];
+      if (!tile) {
+        const placeholder = document.createElement("span");
+        placeholder.className = "hand-placeholder";
+        panel.hand.append(placeholder);
+        continue;
+      }
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "hand-tile";
+      button.disabled = !active || !new Set(["action", "resolve"]).has(state.phase);
+      button.classList.toggle("hand-tile-selected", active && state.selectedHandIds.has(tile.id));
+      button.innerHTML = `<span>${tile.value}</span>${tile.clover ? '<span class="tile-suit" aria-label="trèfle">♣</span>' : ""}`;
+      button.setAttribute("aria-pressed", String(active && state.selectedHandIds.has(tile.id)));
+      button.setAttribute("aria-label", `Tuile ${tile.value}${tile.clover ? " trèfle" : ""}`);
+      button.addEventListener("click", () => toggleHandTile(playerIndex, tile.id));
+      panel.hand.append(button);
     }
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "hand-tile";
-    button.classList.toggle("hand-tile-selected", state.selectedHandIds.has(tile.id));
-    button.innerHTML = `<span>${tile.value}</span>${tile.clover ? '<span class="tile-suit" aria-label="trèfle">♣</span>' : ""}`;
-    button.setAttribute("aria-pressed", String(state.selectedHandIds.has(tile.id)));
-    button.setAttribute("aria-label", `Tuile ${tile.value}${tile.clover ? " trèfle" : ""}`);
-    button.addEventListener("click", () => toggleHandTile(tile.id));
-    elements.hand.append(button);
-  }
+    const selected = active ? selectedTiles() : [];
+    panel.selectedSum.textContent = String(selected.reduce((total, tile) => total + tile.value, 0));
 
-  const selected = selectedTiles();
-  const sum = selected.reduce((total, tile) => total + tile.value, 0);
-  elements.selectedSum.textContent = String(sum);
-
-  if (state.phase === "action" && currentCell()?.tile === null) {
-    elements.selectionHelp.textContent = "Sélectionnez une tuile à déposer sur cette case vide.";
-  } else if (state.phase === "resolve") {
-    elements.selectionHelp.textContent = "Sélectionnez trois tuiles dont la somme vaut 21.";
-  } else {
-    elements.selectionHelp.textContent = "Les combinaisons de trois tuiles sont évaluées dans votre stockage.";
-  }
+    if (!active) {
+      panel.selectionHelp.textContent = "Zone inactive pendant le tour adverse.";
+    } else if (state.phase === "action" && currentCell()?.tile === null) {
+      panel.selectionHelp.textContent = "Sélectionnez une tuile à déposer sur cette case vide.";
+    } else if (state.phase === "resolve") {
+      panel.selectionHelp.textContent = "Sélectionnez trois tuiles dont la somme vaut 21.";
+    } else {
+      panel.selectionHelp.textContent = "Les combinaisons de trois tuiles sont évaluées dans votre stockage.";
+    }
+  });
 }
 
 function renderControls() {
@@ -572,25 +588,28 @@ function renderControls() {
   const movePhase = state.phase === "move";
   const actionPhase = state.phase === "action";
 
-  elements.stepsUsed.textContent = String(state.stepsUsed);
-  elements.stepLimit.textContent = String(state.moveLimit);
+  elements.players.forEach((panel, playerIndex) => {
+    const active = playerIndex === state.currentPlayer;
 
-  elements.boostToggle.disabled = !movePhase || state.stepsUsed > 0 || state.firstTurnOfRound || !player.boostAvailable;
-  elements.boostToggle.checked = state.usedBoostThisTurn;
+    panel.stepsUsed.textContent = active ? String(state.stepsUsed) : "0";
+    panel.stepLimit.textContent = active ? String(state.moveLimit) : String(RULES.normalMove);
+    panel.boostToggle.checked = active && state.usedBoostThisTurn;
+    panel.boostToggle.disabled = !active || !movePhase || state.stepsUsed > 0 || state.firstTurnOfRound || !player.boostAvailable;
 
-  elements.directionButtons.forEach((button) => {
-    const direction = button.dataset.direction;
-    button.disabled = !movePhase || state.stepsUsed >= state.moveLimit || !canMoveDirection(direction);
+    panel.directionButtons.forEach((button) => {
+      const direction = button.dataset.direction;
+      button.disabled = !active || !movePhase || state.stepsUsed >= state.moveLimit || !canMoveDirection(direction);
+    });
+
+    panel.endMoveButton.disabled = !active || !movePhase || state.stepsUsed < 1;
+    panel.takeButton.hidden = active && actionPhase ? !cell?.tile : false;
+    panel.takeButton.disabled = !active || !actionPhase || !cell?.tile || player.hand.length >= RULES.handLimit;
+    panel.depositButton.hidden = active && actionPhase ? cell?.tile !== null : false;
+    panel.depositButton.disabled = !active || !actionPhase || cell?.tile !== null || state.selectedHandIds.size !== 1;
+    panel.passButton.disabled = !active || !new Set(["action", "resolve"]).has(state.phase);
+    panel.scoreButton.hidden = active ? state.phase !== "resolve" : false;
+    panel.scoreButton.disabled = !active || state.phase !== "resolve" || selected.length !== 3 || selectedSum !== 21;
   });
-
-  elements.endMoveButton.disabled = !movePhase || state.stepsUsed < 1;
-  elements.takeButton.hidden = !actionPhase || !cell?.tile;
-  elements.takeButton.disabled = !actionPhase || !cell?.tile || player.hand.length >= RULES.handLimit;
-  elements.depositButton.hidden = !(actionPhase && cell?.tile === null);
-  elements.depositButton.disabled = !(actionPhase && cell?.tile === null && state.selectedHandIds.size === 1);
-  elements.passButton.disabled = !new Set(["action", "resolve"]).has(state.phase);
-  elements.scoreButton.hidden = state.phase !== "resolve";
-  elements.scoreButton.disabled = !(state.phase === "resolve" && selected.length === 3 && selectedSum === 21);
 }
 
 function canMoveDirection(direction) {
@@ -610,13 +629,15 @@ function handleKeyboard(event) {
 
 elements.setupForm.addEventListener("submit", startMatch);
 elements.newMatchButton.addEventListener("click", () => elements.setupDialog.showModal());
-elements.boostToggle.addEventListener("change", chooseBoost);
-elements.directionButtons.forEach((button) => button.addEventListener("click", () => movePawn(button.dataset.direction)));
-elements.endMoveButton.addEventListener("click", endMovement);
-elements.takeButton.addEventListener("click", takeTile);
-elements.depositButton.addEventListener("click", depositSelectedTile);
-elements.scoreButton.addEventListener("click", scoreSelectedTiles);
-elements.passButton.addEventListener("click", passTurn);
+elements.players.forEach((panel, playerIndex) => {
+  panel.boostToggle.addEventListener("change", () => chooseBoost(playerIndex));
+  panel.directionButtons.forEach((button) => button.addEventListener("click", () => movePawn(button.dataset.direction, playerIndex)));
+  panel.endMoveButton.addEventListener("click", () => endMovement(playerIndex));
+  panel.takeButton.addEventListener("click", () => takeTile(playerIndex));
+  panel.depositButton.addEventListener("click", () => depositSelectedTile(playerIndex));
+  panel.scoreButton.addEventListener("click", () => scoreSelectedTiles(playerIndex));
+  panel.passButton.addEventListener("click", () => passTurn(playerIndex));
+});
 elements.dialogButton.addEventListener("click", closeMessage);
 document.addEventListener("keydown", handleKeyboard);
 
