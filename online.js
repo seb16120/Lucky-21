@@ -5,7 +5,7 @@ const RULES = Object.freeze({ size: 7, hand: 4, move: 3, boost: 5, roundPoints: 
 const els = Object.fromEntries([
   "lobby","game","create-form","join-form","create-name","join-name","memory-seconds","room-code","lobby-message",
   "sync-label","leave-button","copy-code","round-number","phase-label","status-title","status-message","memory-countdown",
-  "board","boost-toggle","take-button","pass-button","hand","hand-count","selection-help","score-button","deposit-button",
+  "board","board-panel","boost-toggle","take-button","pass-button","hand","hand-count","selection-help","score-button","deposit-button",
   "result-dialog","close-result","result-title","result-message","continue-button",
 ].map((id) => [id.replaceAll("-", "_"), document.querySelector(`#${id}`)]));
 els.playerCards = [document.querySelector("#player-0-card"), document.querySelector("#player-1-card")];
@@ -299,6 +299,8 @@ function render() {
   renderBoard();
   renderHand();
   renderControls();
+  const opponentIsPlaying = !["waiting","memory","round-over","match-over"].includes(game.phase) && game.currentPlayer !== seat;
+  els.board_panel.classList.toggle("waiting-turn", opponentIsPlaying);
   if (game.result && ["round-over","match-over"].includes(game.phase) && !els.result_dialog.open) showResult();
 }
 
@@ -321,7 +323,7 @@ function renderBoard() {
     const button=document.createElement("button"); button.className="cell"; button.type="button";
     const adjacent=Math.abs(cell.row-game.pawn.row)+Math.abs(cell.col-game.pawn.col)===1;
     const reachable=isMyTurn()&&game.phase==="move"&&adjacent&&game.steps<game.limit;
-    button.classList.toggle("reachable",reachable); button.disabled=!reachable;
+    button.classList.toggle("reachable",reachable); button.classList.toggle("empty",!cell.tile); button.disabled=!reachable;
     if(cell.tile){
       const tile=document.createElement("span");
       const visible=game.phase==="memory" || (same(cell,game.pawn)&&["deposit","resolve"].includes(game.phase));
@@ -384,6 +386,12 @@ els.score_button.addEventListener("click",score);
 els.deposit_button.addEventListener("click",deposit);
 els.close_result.addEventListener("click",closeResult);
 els.continue_button.addEventListener("click",()=>{if(["round-over","match-over"].includes(game.phase))startNextRound();else closeResult();});
+document.addEventListener("keydown",(event)=>{
+  if(event.key!=="Enter"||event.repeat||event.target.closest("input,select,textarea,button,dialog"))return;
+  if(!isMyTurn()||!["move","deposit"].includes(game.phase))return;
+  event.preventDefault();
+  takeOrDeposit();
+});
 
 setInterval(()=>{
   if(!game||game.phase!=="memory"){els.memory_countdown.textContent="";return;}

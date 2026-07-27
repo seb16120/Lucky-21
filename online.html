@@ -35,12 +35,12 @@
         <strong id="memory-countdown"></strong>
       </section>
       <section class="play-layout">
-        <article class="board-panel"><div id="board" class="board" role="grid"></div></article>
+        <article id="board-panel" class="board-panel"><div id="board" class="board" role="grid"></div></article>
         <aside class="controls-panel">
           <p class="eyebrow">Vos commandes</p>
           <div class="direction-pad"><button data-direction="up">↑</button><button data-direction="left">←</button><button data-direction="down">↓</button><button data-direction="right">→</button></div>
           <label class="boost"><input id="boost-toggle" type="checkbox"> Utiliser le déplacement de 5</label>
-          <div class="turn-actions"><button id="take-button">Prendre / déposer</button><button id="pass-button" class="secondary">Passer</button></div>
+          <div class="turn-actions"><button id="take-button"><kbd>↵ Entrée</kbd> Prendre / déposer</button><button id="pass-button" class="secondary">Passer</button></div>
           <div class="hand-heading"><strong>Votre stockage</strong><span id="hand-count">0/4</span></div>
           <div id="hand" class="hand"></div>
           <p id="selection-help" class="help"></p>
