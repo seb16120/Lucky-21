@@ -483,7 +483,7 @@ function renderBoard() {
       const tile = document.createElement("span");
       const showFace = state.phase === "memory" || (current && new Set(["deposit", "resolve"]).has(state.phase));
       tile.className = `tile${showFace ? " tile-visible" : ""}`;
-      tile.innerHTML = `<span class="tile-number">${cell.tile.value}</span>${cell.tile.clover ? '<span class="tile-suit" aria-label="trèfle">♣</span>' : ""}`;
+      tile.innerHTML = showFace\n        ? `<span class="tile-number">${cell.tile.value}</span>${cell.tile.clover ? '<span class="tile-suit" aria-label="trèfle">♣</span>' : ""}`\n        : "";
       button.append(tile);
       button.setAttribute("aria-label", showFace ? `Tuile ${cell.tile.value}${cell.tile.clover ? " trèfle" : ""}` : "Tuile cachée");
     } else {
