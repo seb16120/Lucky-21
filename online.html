@@ -1,0 +1,60 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07563f">
+  <title>Lucky 21 · Vs. Online</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="online.css">
+</head>
+<body>
+  <main class="shell">
+    <header><a href="index.html">← Menu des modes</a><div class="brand"><img src="favicon.svg" alt="">Lucky 21</div><span id="sync-label">Connexion…</span></header>
+
+    <section id="lobby" class="lobby">
+      <div class="lobby-copy"><p class="eyebrow">1v1 online · Bêta amicale</p><h1>Un plateau.<br>Deux mémoires.</h1><p>Créez un salon privé ou saisissez le code reçu. Le créateur prépare le plateau commun, puis chaque action est synchronisée.</p></div>
+      <form id="create-form" class="lobby-card"><p class="eyebrow">Nouveau duel</p><h2>Créer un salon</h2><label>Votre nom<input id="create-name" maxlength="24" value="Joueur 1" required></label><label>Mémorisation<select id="memory-seconds"><option value="10">10 secondes</option><option value="15" selected>15 secondes</option><option value="20">20 secondes</option><option value="30">30 secondes</option></select></label><button>Créer le salon</button></form>
+      <form id="join-form" class="lobby-card"><p class="eyebrow">Invitation reçue</p><h2>Rejoindre</h2><label>Votre nom<input id="join-name" maxlength="24" value="Joueur 2" required></label><label>Code à six caractères<input id="room-code" maxlength="6" autocomplete="off" required></label><button>Rejoindre le salon</button></form>
+      <p id="lobby-message" class="notice"></p>
+    </section>
+
+    <section id="game" class="game" hidden>
+      <div class="game-top">
+        <button id="leave-button" class="secondary">← Quitter le salon</button>
+        <strong>Salon <button id="copy-code" class="code" title="Copier le code"></button></strong>
+      </div>
+      <section class="scoreboard">
+        <article id="player-0-card"><span id="player-0-name">Joueur 1</span><strong><b id="player-0-round">0</b> pt · <b id="player-0-match">0</b> round</strong></article>
+        <div><span>BO3</span><strong id="round-number">Round 1</strong></div>
+        <article id="player-1-card"><span id="player-1-name">En attente…</span><strong><b id="player-1-round">0</b> pt · <b id="player-1-match">0</b> round</strong></article>
+      </section>
+      <section class="status">
+        <div><p id="phase-label" class="eyebrow">Préparation</p><h2 id="status-title">En attente de l’adversaire</h2><p id="status-message"></p></div>
+        <strong id="memory-countdown"></strong>
+      </section>
+      <section class="play-layout">
+        <article class="board-panel"><div id="board" class="board" role="grid"></div></article>
+        <aside class="controls-panel">
+          <p class="eyebrow">Vos commandes</p>
+          <div class="direction-pad"><button data-direction="up">↑</button><button data-direction="left">←</button><button data-direction="down">↓</button><button data-direction="right">→</button></div>
+          <label class="boost"><input id="boost-toggle" type="checkbox"> Utiliser le déplacement de 5</label>
+          <div class="turn-actions"><button id="take-button">Prendre / déposer</button><button id="pass-button" class="secondary">Passer</button></div>
+          <div class="hand-heading"><strong>Votre stockage</strong><span id="hand-count">0/4</span></div>
+          <div id="hand" class="hand"></div>
+          <p id="selection-help" class="help"></p>
+          <button id="score-button" hidden>Valider ce 21</button>
+          <button id="deposit-button" hidden>Déposer la tuile choisie</button>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="result-dialog"><div><button id="close-result" class="dialog-close" aria-label="Fermer">×</button><p class="eyebrow">Résultat</p><h2 id="result-title"></h2><p id="result-message"></p><button id="continue-button">Continuer</button></div></dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="online.js"></script>
+</body>
+</html>
