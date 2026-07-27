@@ -17,8 +17,12 @@
       <div class="lobby-copy"><p class="eyebrow">1v1 online · Bêta amicale</p><h1>Un plateau.<br>Deux mémoires.</h1><p>Créez un salon privé ou saisissez le code reçu. Le créateur prépare le plateau commun, puis chaque action est synchronisée.</p></div>
       <form id="create-form" class="lobby-card"><p class="eyebrow">Nouveau duel</p><h2>Créer un salon</h2><label>Votre nom<input id="create-name" maxlength="24" value="Joueur 1" required></label><label>Mémorisation<select id="memory-seconds"><option value="10">10 secondes</option><option value="15" selected>15 secondes</option><option value="20">20 secondes</option><option value="30">30 secondes</option></select></label><button>Créer le salon</button></form>
       <form id="join-form" class="lobby-card"><p class="eyebrow">Invitation reçue</p><h2>Rejoindre</h2><label>Votre nom<input id="join-name" maxlength="24" value="Joueur 2" required></label><label>Code à six caractères<input id="room-code" maxlength="6" autocomplete="off" required></label><button>Rejoindre le salon</button></form>
-      <p id="lobby-message" class="notice"></p>
     </section>
+
+    <div id="lobby-status" class="lobby-status" hidden>
+      <p id="lobby-message" class="notice"></p>
+      <button id="scroll-to-game" class="scroll-to-game" type="button" aria-label="Descendre vers le plateau">↓</button>
+    </div>
 
     <section id="game" class="game" hidden>
       <div class="game-top">

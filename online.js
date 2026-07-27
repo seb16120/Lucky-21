@@ -3,7 +3,7 @@
 
 const RULES = Object.freeze({ size: 7, hand: 4, move: 3, boost: 5, roundPoints: 4, matchRounds: 2 });
 const els = Object.fromEntries([
-  "lobby","game","create-form","join-form","create-name","join-name","memory-seconds","room-code","lobby-message",
+  "lobby","game","create-form","join-form","create-name","join-name","memory-seconds","room-code","lobby-status","lobby-message","scroll-to-game",
   "sync-label","leave-button","copy-code","round-number","phase-label","status-title","status-message","memory-countdown",
   "board","board-panel","boost-toggle","take-button","pass-button","hand","hand-count","selection-help","score-button","deposit-button",
   "result-dialog","close-result","result-title","result-message","continue-button",
@@ -370,12 +370,18 @@ async function leaveRoom(){
   location.href="index.html";
 }
 
-function setLobbyMessage(message,error=false){els.lobby_message.textContent=message;els.lobby_message.style.color=error?"var(--danger)":"var(--gold)";}
+function setLobbyMessage(message,error=false){
+  els.lobby_message.textContent=message;
+  els.lobby_message.style.color=error?"var(--danger)":"var(--gold)";
+  els.lobby_status.hidden=!message;
+  els.scroll_to_game.hidden=error||!message;
+}
 function friendlyError(error){const message=String(error?.message??error);if(/not found|introuvable/i.test(message))return"Ce salon est introuvable.";if(/full|complet/i.test(message))return"Ce salon possède déjà deux joueurs.";return message;}
 
 els.create_form.addEventListener("submit",createRoom);
 els.join_form.addEventListener("submit",joinRoom);
 els.room_code.addEventListener("input",()=>{els.room_code.value=els.room_code.value.toUpperCase().replace(/[^A-Z0-9]/g,"");});
+els.scroll_to_game.addEventListener("click",()=>els.game.scrollIntoView({behavior:"smooth",block:"start"}));
 els.copy_code.addEventListener("click",async()=>{await navigator.clipboard.writeText(roomCode);els.copy_code.textContent="Copié ✓";setTimeout(()=>{els.copy_code.textContent=roomCode;},1200);});
 els.leave_button.addEventListener("click",leaveRoom);
 els.directions.forEach((button)=>button.addEventListener("click",()=>move(button.dataset.direction)));
