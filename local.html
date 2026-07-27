@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Lucky 21, jeu local de mémorisation et d'addition pour deux joueurs.">
   <title>Lucky 21</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">\n  <link rel="stylesheet" href="style.css">
   <style>
     .cell:disabled,.hand-tile:disabled{opacity:1}.cell:disabled{cursor:default}
     .move-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(.35rem,.65vmin,.7rem);margin-top:clamp(.35rem,.7vmin,.7rem)}
@@ -24,7 +24,7 @@
         <p class="eyebrow">Jeu local à deux joueurs</p>
         <h1>Lucky <span>21</span></h1>
       </div>
-      <button id="new-match-button" class="button button-ghost" type="button">Nouvelle partie</button>
+      <div style="display:flex;gap:.6rem"><a class="button button-ghost" href="index.html">Menu</a><button id="new-match-button" class="button button-ghost" type="button">Nouvelle partie</button></div>
     </header>
 
     <section class="status-panel" aria-live="polite">
