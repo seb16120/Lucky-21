@@ -25,7 +25,7 @@
         <p class="eyebrow">Jeu local à deux joueurs</p>
         <h1>Lucky <span>21</span></h1>
       </div>
-      <div style="display:flex;gap:.6rem"><a class="button button-ghost" href="index.html">Menu</a><button id="new-match-button" class="button button-ghost" type="button">Nouvelle partie</button></div>
+      <div class="header-actions"><a class="button button-ghost" href="index.html">Menu</a><button id="new-match-button" class="button button-ghost" type="button">Nouvelle partie</button><button id="rules-button" class="button button-gold" type="button">Règles et commandes</button></div>
     </header>
 
     <section class="status-panel" aria-live="polite">
@@ -127,6 +127,17 @@
       <label>Temps de mémorisation<span class="input-with-suffix"><input id="memory-seconds" name="memorySeconds" type="number" min="5" max="60" value="10" required><span>secondes</span></span></label>
       <button class="button button-gold button-full" type="submit">Commencer le match</button>
     </form>
+  </dialog>
+
+  <dialog id="rules-dialog" class="dialog dialog-message">
+    <div>
+      <div class="dialog-heading"><p class="eyebrow">Lucky 21</p><button id="rules-close-button" class="dialog-close" type="button" aria-label="Fermer">×</button></div>
+      <h2>Règles et commandes</h2>
+      <p>Explorez le plateau, récupérez des tuiles puis composez exactement 21 avec trois tuiles dans votre stockage.</p>
+      <section class="rules-mode rules-desktop"><h3>Ordinateur</h3><p><strong>Flèches</strong> : déplacer le pion · <strong>Entrée</strong> : prendre ou déposer · <strong>Ctrl</strong> : passer le tour.</p></section>
+      <section class="rules-mode rules-touch"><h3>Smartphone et tablette</h3><p>Utilisez les boutons directionnels pour déplacer le pion, puis <strong>Prendre / déposer</strong> ou <strong>Passer le tour</strong>. Le panneau du joueur actif s’affiche sous le plateau.</p></section>
+      <button id="rules-ok-button" class="button button-gold button-full" type="button">Compris</button>
+    </div>
   </dialog>
 
   <dialog id="message-dialog" class="dialog dialog-message">
