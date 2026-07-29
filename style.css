@@ -478,3 +478,45 @@ h3 { margin: 0; font-size: clamp(0.82rem, 1.25vmin, 1.1rem); }
   .hint { min-height: 0; margin-bottom: 0.22rem; }
   .sum-line { margin-bottom: 0.28rem; }
 }
+
+
+.header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; }
+
+.dialog-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+.dialog-close {
+  flex: 0 0 auto;
+  width: 2rem;
+  aspect-ratio: 1;
+  border: 0.08rem solid var(--line);
+  border-radius: 999rem;
+  color: var(--text);
+  background: rgba(255,255,255,0.08);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.rules-mode {
+  padding: 0.7rem;
+  border: 0.07rem solid var(--line);
+  border-radius: 0.7rem;
+  background: rgba(0, 45, 31, 0.26);
+}
+.rules-mode h3 { color: var(--gold); }
+.rules-mode p { margin: 0.35rem 0 0; }
+.rules-touch { display: none; }
+
+@media (max-width: 48rem), (pointer: coarse) {
+  .rules-desktop { display: none; }
+  .rules-touch { display: block; }
+}
+
+@media (max-width: 48rem) {
+  .game-header { align-items: flex-start; }
+  .header-actions { gap: 0.35rem; }
+  .header-actions .button { padding-inline: 0.55rem; font-size: 0.66rem; }
+  .dialog { width: min(94vw, 27rem); }
+}
