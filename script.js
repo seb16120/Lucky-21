@@ -17,6 +17,10 @@ const RULES = Object.freeze({
 const elements = {
   board: document.querySelector("#board"),
   newMatchButton: document.querySelector("#new-match-button"),
+  rulesButton: document.querySelector("#rules-button"),
+  rulesDialog: document.querySelector("#rules-dialog"),
+  rulesCloseButton: document.querySelector("#rules-close-button"),
+  rulesOkButton: document.querySelector("#rules-ok-button"),
   setupDialog: document.querySelector("#setup-dialog"),
   setupForm: document.querySelector("#setup-form"),
   setupNames: [document.querySelector("#setup-name-0"), document.querySelector("#setup-name-1")],
@@ -623,6 +627,9 @@ function handleKeyboard(event) {
 
 elements.setupForm.addEventListener("submit", startMatch);
 elements.newMatchButton.addEventListener("click", () => elements.setupDialog.showModal());
+elements.rulesButton.addEventListener("click", () => elements.rulesDialog.showModal());
+elements.rulesCloseButton.addEventListener("click", () => elements.rulesDialog.close());
+elements.rulesOkButton.addEventListener("click", () => elements.rulesDialog.close());
 elements.players.forEach((panel, playerIndex) => {
   panel.boostToggle.addEventListener("change", () => chooseBoost(playerIndex));
   panel.directionButtons.forEach((button) => button.addEventListener("click", () => movePawn(button.dataset.direction, playerIndex)));
