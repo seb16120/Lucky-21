@@ -415,3 +415,46 @@ h3 { margin: 0; font-size: clamp(0.82rem, 1.25vmin, 1.1rem); }
   .movement-section .button { grid-column: 1; }
   .direction-pad { grid-column: 2; grid-row: 1 / span 3; margin: 0; align-self: center; }
 }
+
+
+/* Mobile : un seul panneau de commandes, celui du joueur qui a la main. */
+@media (max-width: 48rem) {
+  .app-shell {
+    width: 100%;
+    padding: 0.35rem;
+    gap: 0.35rem;
+  }
+
+  .game-header { gap: 0.45rem; }
+  .game-header .button { min-height: 2.2rem; padding-inline: 0.7rem; }
+  .status-panel { padding: 0.55rem 0.7rem; }
+  .status-copy h2 { font-size: clamp(1.25rem, 5vw, 1.7rem); }
+  .round-indicator { min-width: 4rem; }
+
+  .game-layout {
+    grid-template-areas:
+      "board"
+      "controls";
+    gap: 0.45rem;
+  }
+
+  .board-wrap { grid-area: board; padding: 0.35rem; }
+  .board { width: min(82vw, 48svh); }
+
+  .player-zone {
+    grid-area: controls;
+    grid-row: auto !important;
+    padding: 0.5rem;
+    gap: 0.38rem;
+  }
+
+  .player-zone-waiting { display: none; }
+  .player-zone-active { display: grid; }
+
+  .player-header h2 { font-size: 1.35rem; }
+  .score-grid span { padding-block: 0.26rem; }
+  .panel-section { padding: 0.45rem; }
+  .hand { min-height: 3.4rem; margin-block: 0.28rem; }
+  .hint { min-height: 0; margin-bottom: 0.22rem; }
+  .sum-line { margin-bottom: 0.28rem; }
+}
