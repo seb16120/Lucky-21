@@ -449,10 +449,10 @@ h3 { margin: 0; font-size: clamp(0.82rem, 1.25vmin, 1.1rem); }
     gap: 0.38rem;
   }
 
-  .player-zone-active { display: grid; grid-area: controls; }
+  .player-zone.player-zone-active { display: grid; grid-area: controls; }
 
   /* Le stockage adverse reste visible sous les commandes du joueur actif. */
-  .player-zone-waiting {
+  .player-zone.player-zone-waiting {
     display: block;
     grid-area: opponent-storage;
     padding: 0.45rem;
