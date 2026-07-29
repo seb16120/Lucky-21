@@ -431,30 +431,35 @@ h3 { margin: 0; font-size: clamp(0.82rem, 1.25vmin, 1.1rem); }
   .status-copy h2 { font-size: clamp(1.25rem, 5vw, 1.7rem); }
   .round-indicator { min-width: 4rem; }
 
+  /* Empilement mobile forcé : plateau, joueur actif, stockage adverse. */
   .game-layout {
-    grid-template-areas:
-      "board"
-      "controls"
-      "opponent-storage";
+    display: flex;
+    flex-direction: column;
     gap: 0.45rem;
   }
 
-  .board-wrap { grid-area: board; padding: 0.35rem; }
+  .board-wrap {
+    order: 1;
+    padding: 0.35rem;
+  }
   .board { width: min(82vw, 48svh); }
 
   .player-zone {
-    grid-area: controls;
+    width: 100%;
     grid-row: auto !important;
     padding: 0.5rem;
     gap: 0.38rem;
   }
 
-  .player-zone.player-zone-active { display: grid; grid-area: controls; }
+  .player-zone.player-zone-active {
+    display: grid;
+    order: 2;
+  }
 
-  /* Le stockage adverse reste visible sous les commandes du joueur actif. */
+  /* Le stockage adverse reste toujours sous les commandes du joueur actif. */
   .player-zone.player-zone-waiting {
     display: block;
-    grid-area: opponent-storage;
+    order: 3;
     padding: 0.45rem;
   }
   .player-zone-waiting .player-header,
